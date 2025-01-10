@@ -27,6 +27,9 @@ jobs:
         run: |
           npm install
           npm run build
+          # Move the built files to a directory that will be served by the Go API
+          mkdir -p ../dist/web
+          cp -r build/* ../dist/web/
 
       - name: Build Go API
         run: go build -v ./...
@@ -61,8 +64,7 @@ jobs:
           chmod 600 ~/.netrc
 
           # Create Procfile if it doesn't exist
-          echo "web: fabric --serve" > Procfile
-          echo "api: ./fabric --serve" >> Procfile
+          echo "web: ./fabric --serve" > Procfile
 
           # Create app if it doesn't exist
           if ! heroku apps:info "$HEROKU_APP_NAME" &> /dev/null; then
