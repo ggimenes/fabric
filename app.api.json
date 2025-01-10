@@ -1,9 +1,9 @@
 {
-  "name": "fabric",
-  "description": "An open-source framework for augmenting humans using AI",
+  "name": "fabric-api",
+  "description": "Fabric API - An open-source framework for augmenting humans using AI",
   "repository": "https://github.com/danielmiessler/fabric",
   "logo": "https://raw.githubusercontent.com/danielmiessler/fabric/main/images/fabric-logo-gif.gif",
-  "keywords": ["ai", "automation", "golang", "cli", "web-ui"],
+  "keywords": ["ai", "automation", "golang", "api"],
   "env": {
     "OPENAI_API_KEY": {
       "description": "Your OpenAI API key",
@@ -27,25 +27,14 @@
   "buildpacks": [
     {
       "url": "heroku/go"
-    },
-    {
-      "url": "heroku/nodejs"
     }
   ],
   "formation": {
     "web": {
       "quantity": 1,
       "size": "eco"
-    },
-    "api": {
-      "quantity": 1,
-      "size": "eco"
     }
   },
-  "scripts": {
-    "postdeploy": "cd web && npm install && npm run build"
-  },
   "success_url": "/",
-  "website": "https://github.com/danielmiessler/fabric",
-  "repository": "https://github.com/danielmiessler/fabric"
+  "website": "https://github.com/danielmiessler/fabric"
 } 

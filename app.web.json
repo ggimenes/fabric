@@ -1,0 +1,33 @@
+{
+  "name": "fabric-web",
+  "description": "Fabric Web UI - An open-source framework for augmenting humans using AI",
+  "repository": "https://github.com/danielmiessler/fabric",
+  "logo": "https://raw.githubusercontent.com/danielmiessler/fabric/main/images/fabric-logo-gif.gif",
+  "keywords": ["ai", "automation", "web-ui", "svelte"],
+  "env": {
+    "NODE_ENV": {
+      "description": "Node environment",
+      "value": "production"
+    },
+    "VITE_API_URL": {
+      "description": "URL of the Fabric API",
+      "required": true
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "eco"
+    }
+  },
+  "scripts": {
+    "postdeploy": "cd web && npm install && npm run build"
+  },
+  "success_url": "/",
+  "website": "https://github.com/danielmiessler/fabric"
+} 

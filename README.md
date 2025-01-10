@@ -537,47 +537,62 @@ alias pbpaste='xclip -selection clipboard -o'
 
 ## Web Interface
 
-Fabric now includes a built-in web interface that provides a GUI alternative to the command-line interface and an out-of-the-box website for those who want to get started with web development or blogging.  
-You can use this app as a GUI interface for Fabric, a ready to go blog-site, or a website template for your own projects.
+Fabric includes a web interface that provides a GUI alternative to the command-line interface. The application is split into two components:
+1. API (Go backend)
+2. Web UI (SvelteKit frontend)
 
-The `web/src/lib/content` directory includes starter `.obsidian/` and `templates/` directories, allowing you to open up the `web/src/lib/content/` directory as an [Obsidian.md](https://obsidian.md) vault. You can place your posts in the posts directory when you're ready to publish.
+### Deployment
 
-### Installing
+The application can be deployed to Heroku using two separate applications:
 
-The GUI can be installed by navigating to the `web` directory and using `npm install`, `pnpm install`, or your favorite package manager. Then simply run the development server to start the app.
+#### Prerequisites
+1. [Heroku Account](https://signup.heroku.com)
+2. [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli)
+3. GitHub repository with necessary secrets configured
 
-_You will need to run fabric in a separate terminal with the `fabric --serve` command._
-
-**From the fabric project `web/` directory:**
-
-```shell
-npm run dev
-
-## or ##
-
-pnpm run dev
-
-## or your equivalent
-```
-
-### Streamlit UI
-
-To run the Streamlit user interface:
-
+#### Creating the Applications
+Create two Heroku apps:
 ```bash
-# Install required dependencies
-pip install streamlit pandas matplotlib seaborn numpy python-dotenv
+# Create the API app
+heroku create your-app-name-api
 
-# Run the Streamlit app
-streamlit run streamlit.py
+# Create the web UI app
+heroku create your-app-name-web
 ```
 
-The Streamlit UI provides a user-friendly interface for:
+#### Setting up GitHub Secrets
+Configure the following secrets in your GitHub repository:
+```
+HEROKU_API_KEY          # Your Heroku API key
+HEROKU_EMAIL           # Your Heroku email
+HEROKU_API_APP_NAME    # Name of your API app (e.g., your-app-name-api)
+HEROKU_WEB_APP_NAME    # Name of your web UI app (e.g., your-app-name-web)
+HEROKU_API_URL         # Full URL of your API app (https://your-app-name-api.herokuapp.com)
+```
 
-- Running and chaining patterns
-- Managing pattern outputs
-- Creating and editing patterns
-- Analyzing pattern results
+#### Environment Variables
+Set up required environment variables:
+```bash
+# For the API app
+heroku config:set OPENAI_API_KEY=your_key -a your-app-name-api
+heroku config:set GO_ENV=production -a your-app-name-api
+
+# For the web UI app
+heroku config:set VITE_API_URL=https://your-app-name-api.herokuapp.com -a your-app-name-web
+heroku config:set NODE_ENV=production -a your-app-name-web
+```
+
+#### Deployment
+The applications will deploy automatically when changes are pushed to the main branch:
+- API deploys when Go files change
+- Web UI deploys when files in the `web/` directory change
+
+You can also trigger manual deployments using the "Run workflow" option in GitHub Actions.
+
+#### Accessing the Applications
+After deployment:
+- API will be available at: `https://your-app-name-api.herokuapp.com`
+- Web UI will be available at: `https://your-app-name-web.herokuapp.com`
 
 ## Meta
 

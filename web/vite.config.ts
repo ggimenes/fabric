@@ -1,6 +1,7 @@
 import { purgeCss } from 'vite-plugin-tailwind-purgecss';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import type { UserConfig } from 'vite';
 
 export default defineConfig({
   plugins: [sveltekit(), purgeCss()],
@@ -26,9 +27,9 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: process.env.VITE_API_URL || 'http://localhost:8080',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        rewrite: (path: string) => path.replace(/^\/api/, '')
       }
     },
     watch: {
@@ -37,4 +38,4 @@ export default defineConfig({
       ignored: ['**/node_modules/**', '**/dist/**', '**/.git/**', '**/.svelte-kit/**']
     }
   }
-});
+} satisfies UserConfig);

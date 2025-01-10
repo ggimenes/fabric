@@ -1,21 +1,19 @@
-name: Deploy to Heroku
+name: Deploy Web UI to Heroku
 
 on:
   push:
     branches:
       - main
+    paths:
+      - "web/**"
+      - ".github/workflows/heroku-deploy-web.yml"
   workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy-web:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: "1.21"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -26,10 +24,13 @@ jobs:
         working-directory: ./web
         run: |
           npm install
-          npm run build
 
-      - name: Build Go API
-        run: go build -v ./...
+      - name: Build Web UI
+        working-directory: ./web
+        env:
+          VITE_API_URL: ${{ secrets.HEROKU_API_URL }}
+        run: |
+          npm run build
 
       - name: Install Heroku CLI
         run: |
@@ -40,14 +41,14 @@ jobs:
         uses: akhileshns/heroku-deploy@v3.13.15
         with:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+          heroku_app_name: ${{ secrets.HEROKU_WEB_APP_NAME }}
           heroku_email: ${{ secrets.HEROKU_EMAIL }}
           usedocker: false
 
-      - name: Deploy to Heroku
+      - name: Deploy Web UI to Heroku
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+          HEROKU_APP_NAME: ${{ secrets.HEROKU_WEB_APP_NAME }}
         run: |
           # Configure Heroku CLI
           cat > ~/.netrc << EOF
@@ -60,17 +61,32 @@ jobs:
           EOF
           chmod 600 ~/.netrc
 
-          # Create Procfile if it doesn't exist
-          echo "web: fabric --serve" > Procfile
-          echo "api: ./fabric --serve" >> Procfile
+          # Create static.json for static site hosting
+          cat > static.json << EOF
+          {
+            "root": "web/build",
+            "clean_urls": true,
+            "routes": {
+              "/**": "index.html"
+            }
+          }
+          EOF
+
+          # Create Procfile for static site
+          echo "web: npm run preview" > Procfile
 
           # Create app if it doesn't exist
           if ! heroku apps:info "$HEROKU_APP_NAME" &> /dev/null; then
             heroku create "$HEROKU_APP_NAME"
           fi
 
-          # Enable runtime metrics
-          heroku labs:enable runtime-metrics -a $HEROKU_APP_NAME || true
+          # Set buildpack for static site hosting
+          heroku buildpacks:clear -a $HEROKU_APP_NAME || true
+          heroku buildpacks:add heroku/nodejs -a $HEROKU_APP_NAME
+
+          # Set environment variables
+          heroku config:set NODE_ENV=production -a $HEROKU_APP_NAME
+          heroku config:set VITE_API_URL=${{ secrets.HEROKU_API_URL }} -a $HEROKU_APP_NAME
 
           # Deploy the application
           git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git HEAD:main
