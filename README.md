@@ -122,7 +122,9 @@ Fabric has Patterns for all sorts of life and work activities, including:
 
 ## Installation
 
-To install Fabric, you can use the latest release binaries or install it from the source.
+To install Fabric, you can use the latest release binaries, install it from the source, or deploy it to Heroku.
+
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ### Get Latest Release Binaries
 
