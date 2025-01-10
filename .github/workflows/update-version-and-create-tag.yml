@@ -3,13 +3,13 @@ name: Update Version File and Create Tag
 on:
   push:
     branches:
-      - main  # Monitor the main branch
+      - main # Monitor the main branch
     paths-ignore:
-      - 'patterns/**'
-      - '**/*.md'
+      - "patterns/**"
+      - "**/*.md"
 
 permissions:
-  contents: write  # Ensure the workflow has write permissions
+  contents: write # Ensure the workflow has write permissions
 
 jobs:
   update-version:
@@ -35,24 +35,30 @@ jobs:
       - name: Get the latest tag
         id: get_latest_tag
         run: |
+          # Get the latest tag or set a default if none exists
           latest_tag=$(git tag --sort=-creatordate | head -n 1)
+          if [ -z "$latest_tag" ]; then
+            latest_tag="v1.4.130"  # Use the known old version as default
+          fi
           echo "Latest tag is: $latest_tag"
-          echo "tag=$latest_tag" >> $GITHUB_ENV  # Save the latest tag to environment file
+          echo "tag=$latest_tag" >> $GITHUB_ENV
 
       - name: Increment patch version
         id: increment_version
         run: |
-          latest_tag=${{ env.tag }}
-          major=$(echo "$latest_tag" | cut -d. -f1 | sed 's/v//')
-          minor=$(echo "$latest_tag" | cut -d. -f2)
-          patch=$(echo "$latest_tag" | cut -d. -f3)
+          latest_tag="${{ env.tag }}"
+          # Remove 'v' prefix if it exists
+          version_number=${latest_tag#v}
+          # Split version into components
+          IFS='.' read -r major minor patch <<< "$version_number"
+          # Increment patch version
           new_patch=$((patch + 1))
           new_version="${major}.${minor}.${new_patch}"
           new_tag="v${new_version}"
           echo "New version is: $new_version"
-          echo "new_version=$new_version" >> $GITHUB_ENV  # Save the new version to environment file
+          echo "new_version=$new_version" >> $GITHUB_ENV
           echo "New tag is: $new_tag"
-          echo "new_tag=$new_tag" >> $GITHUB_ENV  # Save the new tag to environment file
+          echo "new_tag=$new_tag" >> $GITHUB_ENV
 
       - name: Update version.go file
         run: |
@@ -63,7 +69,7 @@ jobs:
       - name: Update version.nix file
         run: |
           echo "\"${{ env.new_version }}\"" > pkgs/fabric/version.nix
-      
+
       - name: Format source codes
         run: |
           go fmt ./...
@@ -79,30 +85,37 @@ jobs:
           git add gomod2nix.toml
           git add .
           if ! git diff --staged --quiet; then
-            git commit -m "Update version to ${{ env.new_tag }} and commit $commit_hash"
+            git commit -m "Update version to ${{ env.new_tag }}"
           else
             echo "No changes to commit."
           fi
 
       - name: Push changes
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use GITHUB_TOKEN to authenticate the push
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git push origin main  # Push changes to the main branch
+          git push origin main
 
       - name: Create a new tag
         env:
           GITHUB_TOKEN: ${{ secrets.TAG_PAT }}
         run: |
-          git tag ${{ env.new_tag }}
-          git push origin ${{ env.new_tag }}  # Push the new tag
+          if [ -n "${{ env.new_tag }}" ]; then
+            git tag "${{ env.new_tag }}"
+            git push origin "${{ env.new_tag }}"
+          else
+            echo "Error: new_tag is not set"
+            exit 1
+          fi
 
       - name: Dispatch event to trigger release workflow
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use GITHUB_TOKEN to authenticate the dispatch
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          curl -X POST \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${{ github.repository }}/dispatches \
-            -d '{"event_type": "tag_created", "client_payload": {"tag": "${{ env.new_tag }}"}}'
+          if [ -n "${{ env.new_tag }}" ]; then
+            curl -X POST \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/repos/${{ github.repository }}/dispatches \
+              -d "{\"event_type\": \"tag_created\", \"client_payload\": {\"tag\": \"${{ env.new_tag }}\"}}"
+          fi
