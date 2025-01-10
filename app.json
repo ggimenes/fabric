@@ -36,6 +36,10 @@
     "web": {
       "quantity": 1,
       "size": "eco"
+    },
+    "api": {
+      "quantity": 1,
+      "size": "eco"
     }
   },
   "scripts": {
