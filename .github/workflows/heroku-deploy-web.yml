@@ -61,10 +61,14 @@ jobs:
           EOF
           chmod 600 ~/.netrc
 
+          # Copy web files to root for Heroku deployment
+          cp -r web/* .
+          cp web/.* . 2>/dev/null || true
+
           # Create static.json for static site hosting
           cat > static.json << EOF
           {
-            "root": "web/build",
+            "root": "build",
             "clean_urls": true,
             "routes": {
               "/**": "index.html"
