@@ -67,7 +67,7 @@ jobs:
           # Add TeX Live buildpack
           heroku buildpacks:clear -a $HEROKU_APP_NAME || true
           heroku buildpacks:add heroku/go -a $HEROKU_APP_NAME
-          heroku buildpacks:add https://github.com/heroku/heroku-buildpack-tex -a $HEROKU_APP_NAME
+          heroku buildpacks:add https://github.com/Thermondo/heroku-buildpack-tex.git -a $HEROKU_APP_NAME
 
           # Set environment variables
           heroku config:set GO_ENV=production -a $HEROKU_APP_NAME
