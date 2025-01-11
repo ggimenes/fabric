@@ -64,6 +64,11 @@ jobs:
           # Enable runtime metrics
           heroku labs:enable runtime-metrics -a $HEROKU_APP_NAME || true
 
+          # Add TeX Live buildpack
+          heroku buildpacks:clear -a $HEROKU_APP_NAME || true
+          heroku buildpacks:add heroku/go -a $HEROKU_APP_NAME
+          heroku buildpacks:add https://github.com/heroku/heroku-buildpack-tex -a $HEROKU_APP_NAME
+
           # Set environment variables
           heroku config:set GO_ENV=production -a $HEROKU_APP_NAME
           heroku config:set PORT=8080 -a $HEROKU_APP_NAME
