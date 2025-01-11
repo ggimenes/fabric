@@ -65,6 +65,9 @@ jobs:
           cp -r web/* .
           cp web/.* . 2>/dev/null || true
 
+          # Modify package.json for Heroku deployment
+          jq '.scripts.start = "npm run preview" | .scripts.build = "vite build"' web/package.json > package.json
+
           # Create static.json for static site hosting
           cat > static.json << EOF
           {
@@ -77,7 +80,7 @@ jobs:
           EOF
 
           # Create Procfile for static site
-          echo "web: npm run preview" > Procfile
+          echo "web: npm start" > Procfile
 
           # Create app if it doesn't exist
           if ! heroku apps:info "$HEROKU_APP_NAME" &> /dev/null; then
