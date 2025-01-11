@@ -72,6 +72,13 @@ jobs:
           # Set environment variables
           heroku config:set GO_ENV=production -a $HEROKU_APP_NAME
           heroku config:set PORT=8080 -a $HEROKU_APP_NAME
+          heroku config:set OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} -a $HEROKU_APP_NAME
+          heroku config:set DEFAULT_MODEL=${{ secrets.DEFAULT_MODEL }} -a $HEROKU_APP_NAME
+          heroku config:set DEFAULT_VENDOR=${{ secrets.DEFAULT_VENDOR }} -a $HEROKU_APP_NAME
+
+          # Create necessary directories and download patterns
+          heroku run "mkdir -p /app/.config/fabric/patterns" -a $HEROKU_APP_NAME
+          heroku run "git clone https://github.com/danielmiessler/fabric.git /tmp/fabric && cp -r /tmp/fabric/patterns/* /app/.config/fabric/patterns/" -a $HEROKU_APP_NAME
 
           # Deploy the application
           git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git HEAD:main

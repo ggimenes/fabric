@@ -1,1 +1,1 @@
-web: GO_ENV=production bin/fabric --serve 
+web: GO_ENV=production bin/fabric serve 
