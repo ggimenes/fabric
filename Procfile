@@ -1,1 +1,1 @@
-web: ./fabric --serve 
+web: bin/fabric --serve 
